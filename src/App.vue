@@ -1,17 +1,21 @@
 <template>
   <div id="app">
    
-    <Publications />
+    <!-- <Publications /> -->
+    <Publications2 />
   </div>
 </template>
 
 <script>
-import Publications from './components/Publications.vue'
+// import Publications from './components/Publications.vue'
+import Publications2 from './components/Publications2.vue'
+
 
 export default {
   name: 'App',
   components: {
-    Publications
+    // Publications,
+    Publications2
   }
 }
 </script>
