@@ -1,72 +1,43 @@
 <template>
-  <div id="publications">
-    <form v-on:submit.prevent>
-      <div class="search">
-        <input
-          id="post-search"
-          type="text"
-          name="search"
-          placeholder="Begin typing to filter by title"
-          class="search-field"
-          ref="search-field"
-          v-model="searchedVal"
-        />
-        <input type="submit" value="submit" class="search-submit" />
-      </div>
-    </form>
+<div class="grid-container">
+  <div class="search">
+      <input
+        id="search-bar"
+        v-model="search"
+        class="search-field"
+        type="text"
+        placeholder="Filter documents by title"
+      />
+      <input ref="archive-search-bar" type="submit" class="search-submit" value="Search" />
+      <button v-if="search > 0" class="clear-search-btn" @click="clearAllFilters">
+        <i class="fas fa-times" />
+      </button>
+    </div>
     <div id="filter-results" class="bg-ghost-gray pam">
-      <div class="h5">Filter results</div>
-      <div class="grid-x grid-margin-x">
-        <div class="cell medium-4 small-11">
-          <datepicker
-            name="startDate"
-            placeholder="Start date"
-            v-on:closed="runDateQuery"
-            v-model="state.startDate"
-            format="MMM. dd, yyyy"
-            :disabled="state.disabled"
-          ></datepicker>
+      <h6>Filter results</h6>
+      <div class="filter-container">
+        <!-- <div class="date-pickers">
+          <datepicker v-model="start" name="start" placeholder="Start date" format="MMM. dd, yyyy" />
+          <i class="fa fa-arrow-right"></i>
+          <datepicker v-model="end" name="end" placeholder="End date" format="MMM. dd, yyyy" />
         </div>
-        <div class="cell medium-1 small-2 mts">
-          <i class="fas fa-arrow-right"></i>
-        </div>
-        <div class="cell medium-4 small-11">
-          <datepicker
-            placeholder="End date"
-            name="endDate"
-            v-on:closed="runDateQuery"
-            v-model="state.endDate"
-            format="MMM. dd, yyyy"
-            :disabled="state.disabled"
-          ></datepicker>
-        </div>
-        <div class="cell medium-9 small-24 auto filter-by-owner">
+        <div class="dept-select">
           <v-select
-            label="slang_name"
-            placeholder="All departments"
-            v-model="selected"
-            :options="categories"
-            :on-change="filterByCategory"
-          ></v-select>
+            ref="categorySelect"
+            v-model="category"
+            label="selectedDepartment"
+            placeholder="Filter by owner"
+            :options="postTitles"
+          />
         </div>
-        <div class="cell medium-6 small-24">
-          <a class="button content-type-featured full" @click="reset">Clear filters</a>
-        </div>
-      </div>
+        <div class="clear-filters-button">
+          <a class="button content-type-featured full" @click="clearAllFilters()">Clear filters</a>
+        </div> -->
+      </div> 
     </div>
-    <div v-show="loading" class="mtm center">
-      <i class="fas fa-spinner fa-spin fa-3x"></i>
-    </div>
-    <div v-show="!loading && emptyResponse" class="h3 mtm center">Sorry, there are no results.</div>
-    <div v-show="failure" class="h3 mtm center">Sorry, there was a problem. Please try again.</div>
-
-    <div v-if="filteredList.length">
-      <table
-        class="stack theme-light archive-results"
-        data-sticky-container
-        v-show="!loading && !emptyResponse && !failure"
-      >
-        <thead
+  <table
+  class="stack theme-light archive-results">
+    <thead
           class="sticky center bg-white"
           data-sticky
           data-top-anchor="filter-results:bottom"
@@ -74,148 +45,86 @@
           data-options="marginTop:4.8;"
         >
           <tr>
-            <th class="table-sort title" @click="sort('title')" :class="sortTitle">
+            <th
+              class="table-sort title"
+            >
               <span>Title</span>
             </th>
-
-            <th class="table-sort date" @click="sort('date')" :class="sortDate">
+            <th
+              class="table-sort date"
+            >
               <span>Publish date</span>
             </th>
-            <th class="department">Department</th>
+            <th>Department</th>
           </tr>
         </thead>
-
-        <paginate
-          name="documents"
-          :list="filteredList"
-          class="paginate-list"
-          tag="tbody"
-          :per="40"
-        >
+        <tbody>
           <tr
-            v-for="document in paginated('documents')"
-            :key="document.id"
+            v-for="post in documents"
+            :key="post.id"
             class="vue-clickable-row"
-            v-on:click.stop.prevent="goToDoc(document.link)"
+            @click.stop.prevent="goToPost(post.link)"
           >
             <td class="title">
               <a
-                :href="document.link"
-                v-on:click.prevent="goToDoc(document.link)"
-              >{{ document.title }}</a>
+                :href="post.link"
+                target="_blank"
+                @click.prevent="goToPost(post.link)"
+              >
+                {{ post.title }}
+              </a>
             </td>
-            <td class="date">{{ document.date | formatDate }}</td>
+            <td class="date">
+              {{ post.date }}
+            </td>
             <td class="categories">
-              <span v-for="(category, i) in document.categories" :key="i">
-                <span>{{ category.slang_name }}</span>
-                <span v-if="i < document.categories.length - 1">,&nbsp;</span>
+              <span
+                v-for="(category, i) in post.categories"
+                :key="i"
+              >
+                <span>{{ category.slang_name }}</span><span v-if="i < post.categories.length - 1">,&nbsp;</span>
               </span>
             </td>
           </tr>
-        </paginate>
-      </table>
-      <paginate-links
-        for="documents"
-        :limit="3"
-        :async="true"
-        :show-step-links="true"
-        :hide-single-page="false"
-        @change="onDocsPageChange"
-        :step-links="{
-          next: 'Next',
-          prev: 'Previous'
-        }"
-        v-show="!loading && !emptyResponse && !failure"
-      ></paginate-links>
-    </div>
-    <div v-else>
-      <div v-show="!emptyResponse" class="h3 mtm center">Sorry, there are no results.</div>
-    </div>
-  </div>
+        </tbody>
+
+  </table>
+</div>
 </template>
 
 <script>
-import moment from "moment";
+// import moment from "moment";
 import axios from "axios";
-import vSelect from "vue-select";
-import Datepicker from "vuejs-datepicker";
+// import vSelect from "vue-select";
+// import Datepicker from "vuejs-datepicker";
 
 const pubsEndpoint = "https://phila.gov/wp-json/publications/v1/";
 
 export default {
   name: "publications",
   components: {
-    vSelect,
-    Datepicker
+    // vSelect,
+    // Datepicker
   },
   data: function() {
     return {
       documents: [],
       categories: [{}],
-
       currentSort: "date",
       currentSortDir: "desc",
-
-      selected: null,
-
-      selectedCategory: "",
-
-      search: "",
-      searchedVal: "",
-
-      loading: false,
-      emptyResponse: false,
-      failure: false,
-
-      paginate: ["documents"],
-
-      state: {
-        startDate: "",
-        endDate: "",
-        disabled: {
-          to: new Date(2015, 1, 1),
-          from: new Date()
-        }
-      }
+      search:"",
     };
   },
-  filters: {
-    formatDate: function(value) {
-      if (value) {
-        return moment(String(value)).format("MMM. DD, YYYY");
-      }
-    }
-  },
   mounted: function() {
+    this.getDocuments();
     this.getDropdownCategories();
-    this.loading = true;
   },
-  created: function() {
-    this.loading = true;
 
-    axios
-      .get(pubsEndpoint + "archives", {
-        params: {
-          count: -1
-        }
-      })
-      .then(response => {
-        this.documents = response.data;
-        this.successfulResponse;
-      })
-      .catch(() => {
-        this.failure = true;
-        this.loading = false;
-      });
-  },
   methods: {
-    onDocsPageChange(toPage, fromPage) {
-      console.log(toPage);
-      console.log(fromPage);
-    },
+ 
     getDropdownCategories: function() {
       axios
-        .get("/wp-json/the-latest/v1/categories")
+        .get("https://phila.gov/wp-json/the-latest/v1/categories")
         .then(response => {
           this.categories = response.data;
         })
@@ -223,122 +132,26 @@ export default {
           this.categories = "Sorry, there was a problem.";
         });
     },
+
+    getDocuments: function() {
+      axios
+        .get(pubsEndpoint + "archives?count=10")
+        .then(response => {
+          this.documents = response.data;
+        })
+        .catch(() => {
+          this.documents = "Sorry there was a problem";
+        });
+    },
+
     goToDoc: function(link) {
       window.location.href = link;
     },
-    reset() {
-      this.searchedVal = "";
-      this.state.startDate = "";
-      this.state.endDate = "";
-      //a little convoluted, but will change the state of selected if the reset button is used mutiple times in a session
-      this.selected = this.selected == null ? "" : null;
-      this.runDateQuery();
-      this.filterByCategory();
-    },
-    runDateQuery() {
-      if (!this.state.startDate || !this.state.endDate) return;
+    
 
-      this.loading = true;
-
-      axios
-        .get(pubsEndpoint + "archives", {
-          params: {
-            s: this.searchedVal,
-            category: this.selectedCategory,
-            count: -1,
-            start_date: this.state.startDate,
-            end_date: this.state.endDate
-          }
-        })
-        .then(response => {
-          this.documents = response.data;
-          this.successfulResponse;
-        })
-        .catch(() => {
-          this.failure = true;
-          this.loading = false;
-        });
-    },
-    filterByCategory: function(selectedVal) {
-      if (selectedVal == null) {
-        this.selectedCategory = "";
-      } else {
-        this.selectedCategory = selectedVal.id;
-      }
-
-      this.loading = true;
-
-      axios
-        .get(pubsEndpoint + "archives", {
-          params: {
-            s: this.searchedVal,
-            category: this.selectedCategory,
-            count: -1,
-            start_date: this.state.startDate,
-            end_date: this.state.endDate
-          }
-        })
-        .then(response => {
-          this.loading = false;
-          this.documents = response.data;
-
-          this.successfulResponse;
-        })
-        .catch(() => {
-          this.failure = true;
-          this.loading = false;
-        });
-    },
-    sort: function(column) {
-      //if column == current sort, reverse
-      if (column === this.currentSort) {
-        this.currentSortDir = this.currentSortDir === "asc" ? "desc" : "asc";
-      }
-      this.currentSort = column;
-    },
-    filteredList: function(list) {
-      let searched = this.searchedVal.trim();
-      return list.filter(document => {
-        return (
-          document.title.toLowerCase().indexOf(searched.toLowerCase()) > -1
-        );
-      });
-    }
   },
   computed: {
-    sortTitle: function() {
-      if (this.currentSort == "title") {
-        return this.currentSortDir;
-      } return ""
-      
-    },
-    sortDate: function() {
-      if (this.currentSort == "date") {
-        return this.currentSortDir;
-      }  return ""
-    },
-    // successfulResponse: function() {
-    //   if (this.documents.length == 0) {
-    //     this.emptyResponse = true;
-    //     this.loading = false;
-    //     this.failure = false;
-    //   } else {
-    //     this.emptyResponse = false;
-    //     this.loading = false;
-    //     this.failure = false;
-    //   }  return ""
-    // },
-    // sortedDocuments: function() {
-    //   return this.filteredList(
-    //     this.documents.sort((a, b) => {
-    //       let modifier = 1;
-    //       if (this.currentSortDir === "desc") modifier = -1;
-    //       if (a[this.currentSort] < b[this.currentSort]) return -1 * modifier;
-    //       if (a[this.currentSort] > b[this.currentSort]) return 1 * modifier;
-    //       return 0;
-    //     })
-    //   );
-    // }
+   
   }
 };
 </script>
@@ -412,5 +225,9 @@ export default {
 #archive-results .vdp-datepicker__calendar .cell.selected.highlighted,
 #archive-results .vdp-datepicker__calendar .cell.selected:hover {
   background: #25cef7;
+}
+
+td {
+  text-align: left;
 }
 </style>
