@@ -1,19 +1,18 @@
 <template>
   <div id="app">
-   
     <Publications />
   </div>
 </template>
 
 <script>
-import Publications from './components/Publications.vue'
+import Publications from './components/Publications.vue';
 
 export default {
   name: 'App',
   components: {
-    Publications
-  }
-}
+    Publications,
+  },
+};
 </script>
 
 <style>

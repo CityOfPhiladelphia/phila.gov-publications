@@ -8,22 +8,28 @@
         type="text"
         placeholder="Filter documents by title"
         @keyup.enter="filterDocuments();"
-      />
+      >
       <input
         ref="archive-search-bar"
         type="submit"
         class="search-submit"
         value="Search"
         @click="filterDocuments();"
-      />
-      <button v-if="search > 0" class="clear-search-btn" @click="clearAllFilters">
+      >
+      <button
+        v-if="search > 0"
+        class="clear-search-btn"
+        @click="clearAllFilters"
+      >
         <i class="fas fa-times" />
       </button>
     </div>
-    <div id="filter-results" class="bg-ghost-gray pam">
-      <h6>Filter results</h6>
-      <div class="filter-container grid-x">
-        <div class="cell medium-4 small-10">
+    <div
+      id="filter-results"
+      class="bg-ghost-gray pam"
+    >
+      <div class="filter-container grid-x grid-margin-x">
+        <div class="cell medium-6 small-10">
           <datepicker
             v-model="start"
             name="start"
@@ -31,11 +37,11 @@
             format="MMM. dd, yyyy"
             @closed="filterDocuments()"
           />
-        </div>
-        <div class="cell medium-1 small-2 mts">
+         
           <i class="fas fa-arrow-right" />
         </div>
-        <div class="cell medium-4 small-10">
+        
+        <div class="cell medium-6 ">
           <datepicker
             v-model="end"
             name="end"
@@ -44,17 +50,22 @@
             @closed="filterDocuments()"
           />
         </div>
-
-        <v-select
-          ref="categorySelect"
-          v-model="department"
-          label="slang_name"
-          placeholder="All departments"
-          :options="categories"
-          @input="filterDocuments()"
-        />
-        <div class="cell medium-4 small-24">
-          <a class="button content-type-featured full" @click="clearAllFilters()">Clear filters</a>
+        <div class="cell medium-6 filter-by-owner">
+          <h6>Filter results</h6>
+          <v-select
+            ref="categorySelect"
+            v-model="department"
+            label="slang_name"
+            placeholder="All departments"
+            :options="categories"
+            @input="filterDocuments()"
+          />
+        </div>
+        <div class="cell medium-6 ">
+          <a
+            class="button content-type-featured full"
+            @click="clearAllFilters()"
+          >Clear filters</a>
         </div>
       </div>
     </div>
@@ -85,7 +96,7 @@
         :per="20"
       >
         <tr
-          v-for="post in  paginated('filteredDocuments')"
+          v-for="post in paginated('filteredDocuments')"
           :key="post.id"
           class="vue-clickable-row"
           @click.stop.prevent="goToPost(post.link)"
@@ -97,9 +108,14 @@
               @click.prevent="goToPost(post.link)"
             >{{ post.title }}</a>
           </td>
-          <td class="date">{{ post.date | formatDate }}</td>
+          <td class="date">
+            {{ post.date | formatDate }}
+          </td>
           <td class="categories">
-            <span v-for="(category, i) in post.categories" :key="i">
+            <span
+              v-for="(category, i) in post.categories"
+              :key="i"
+            >
               <span>{{ category.slang_name }}</span>
               <span v-if="i < post.categories.length - 1">,&nbsp;</span>
             </span>
@@ -115,9 +131,9 @@
       :show-step-links="true"
       :hide-single-page="false"
       :step-links="{
-              next: 'Next',
-              prev: 'Previous'
-            }"
+        next: 'Next',
+        prev: 'Previous'
+      }"
       @change="scrollToTop"
     />
   </div>
@@ -138,10 +154,17 @@ Vue.use(VuePaginate);
 const pubsEndpoint = "https://phila.gov/wp-json/publications/v1/";
 
 export default {
-  name: "publications",
+  name: "Publications",
   components: {
     vSelect,
     Datepicker,
+  },
+  filters: {
+    formatDate: function (value) {
+      if (value) {
+        return moment(String(value)).format("MMM. DD, YYYY");
+      }
+    },
   },
   data: function () {
     return {
@@ -157,11 +180,11 @@ export default {
       endpointCategories: [],
       endpointCategoriesSlang: [],
       filteredDocuments: [],
-      paginate: ["filteredDocuments"],
+      paginate: [ "filteredDocuments" ],
       searchOptions: {
         shouldSort: false,
         threshold: 0.3,
-        keys: ["title"],
+        keys: [ "title" ],
       },
     };
   },
@@ -185,20 +208,20 @@ export default {
 
         if (queryEnd < queryStart) {
           return;
-        } else {
-          this.failure = false;
-          let datedDocuments = [];
-          documents.forEach((document) => {
-            let documentDate = moment(document.date).unix();
-            if (documentDate >= queryStart && documentDate <= queryEnd) {
-              datedDocuments.push(document);
-            }
-          });
-          return datedDocuments;
-        }
-      } else {
-        return documents;
-      }
+        } 
+        this.failure = false;
+        let datedDocuments = [];
+        documents.forEach((document) => {
+          let documentDate = moment(document.date).unix();
+          if (documentDate >= queryStart && documentDate <= queryEnd) {
+            datedDocuments.push(document);
+          }
+        });
+        return datedDocuments;
+        
+      } 
+      return documents;
+      
     },
 
     deptFilter: async function (documents) {
@@ -210,9 +233,9 @@ export default {
             }
           });
         });
-      } else {
-        return documents;
-      }
+      } 
+      return documents;
+      
     },
 
     searchFilter: async function (documents) {
@@ -271,6 +294,14 @@ export default {
       window.location.href = link;
     },
 
+    clearAllFilters: function() {
+      this.search = '';
+      this.start = '';
+      this.end = '';
+      this.department = '';
+      this.filterDocuments();
+    },
+
     scrollToTop: function () {
       window.scrollTo({
         top: 0,
@@ -278,194 +309,99 @@ export default {
       });
     },
   },
-  filters: {
-    formatDate: function (value) {
-      if (value) {
-        return moment(String(value)).format("MMM. DD, YYYY");
-      }
-    },
-  },
 };
 </script>
 
-<style>
-.filter-by-owner {
-  font-family: "Open Sans", Helvetica, Roboto, Arial, sans-serif !important;
-}
+<style lang="scss">
+@import 'node_modules/vue-select/dist/vue-select';
 
-.filter-by-owner .v-select .dropdown-toggle {
-  border: none;
-  background: white;
-}
 
-.filter-by-owner .v-select .open-indicator {
-  bottom: 0;
-  top: 0;
-  right: 0;
-  background: #0f4d90;
-  padding: 0 0 0 9px;
-  width: 30px;
-  height: inherit;
+.filter-by-owner{
+  font-family:"Open Sans", Helvetica, Roboto, Arial, sans-serif !important;
+  // min-width: 300px;
 }
-
-.v-select .vs__actions {
-  padding: 0;
-}
-
-.v-select .dropdown-toggle {
-  border-radius: 0;
-  padding: 0;
-}
-
-.filter-by-owner .v-select .open-indicator:before {
-  border-color: white;
-}
-
-.filter-by-owner .v-select input[type="search"],
-.filter-by-owner .v-select input[type="search"]:focus {
-  height: 2.4rem;
-  margin: 0;
-  border: none;
-}
-
-.filter-by-owner ul.dropdown-menu {
-  border: none;
-  font-weight: bold;
-}
-
-.filter-by-owner ul.dropdown-menu li {
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.filter-by-owner ul.dropdown-menu li a {
-  color: #0f4d90;
-  padding: 1rem;
-}
-
-.filter-by-owner ul.dropdown-menu li a:hover {
-  background: #0f4d90;
-  color: white;
-}
-
-.filter-by-owner .v-select .dropdown-menu > .highlight > a {
-  background: #0f4d90;
-  color: white;
-}
-
-.filter-by-owner .v-select.single .selected-tag {
-  background-color: #f0f0f0;
-  border: none;
-}
-
-.vdp-datepicker [type="text"] {
-  height: 2.4rem;
-}
-
-.vdp-datepicker input:read-only {
-  background: white;
-  cursor: pointer;
-}
-
-#archive-results .vdp-datepicker__calendar .cell.selected,
-#archive-results .vdp-datepicker__calendar .cell.selected.highlighted,
-#archive-results .vdp-datepicker__calendar .cell.selected:hover {
-  background: #25cef7;
-}
-
-td {
-  text-align: left;
-}
-
-.filter-by-owner {
-  font-family: "Open Sans", Helvetica, Roboto, Arial, sans-serif !important;
-}
-
 .filter-by-owner .v-select .vs__dropdown-toggle {
-  border: none;
-  background: white;
+  border:none;
+  background:white;
 }
-
-.filter-by-owner .v-select .vs__open-indicator path {
-  bottom: 0;
-  top: 0;
-  right: 0;
+.filter-by-owner .v-select .vs__open-indicator path{
+  bottom:0;
+  top:0;
+  right:0;
   background: #0f4d90;
   padding: 0 0 0 9px;
   width: 30px;
-  height: 100%;
+  height:100%;
   fill: #0f4d90;
 }
 
-.v-select .vs__actions {
-  padding: 0 5px 0 0;
+.v-select .vs__actions{
+  padding:0 5px 0 0;
 }
 
 .v-select .vs__search {
-  color: #a1a1a1;
-  background: white;
+ color: #a1a1a1;
+ background: white;
 }
 
 .vs__selected {
   position: absolute;
 }
-
 .vs__clear:hover {
   background-color: transparent;
 }
 
-.v-select .vs__dropdown-toggle {
+.v-select .vs__dropdown-toggle{
   border-radius: 0;
-  padding: 0;
+  padding:0;
 }
 
-#dept-filter .v-select .vs__dropdown-menu {
-  width: 400px;
+.filter-by-owner .v-select .vs__dropdown-menu{
+ width: 400px;
 }
 
-.filter-by-owner .v-select input[type="search"],
-.v-select input[type="search"]:focus {
-  border: none;
+.filter-by-owner .v-select input[type=search],
+.v-select input[type=search]:focus{
+  border:none;
 }
-
-.filter-by-owner .v-select .vs__open-indicator {
-  border-color: white;
+.filter-by-owner .v-select .vs__open-indicator{
+  border-color:white;
   cursor: pointer;
 }
-
-.filter-by-owner .v-select input[type="search"],
-.filter-by-owner .v-select input[type="search"]:focus {
+.filter-by-owner .v-select input[type=search],
+.filter-by-owner .v-select input[type=search]:focus {
   height: 2.4rem;
-  margin: 0;
+  margin:0;
 }
-
-.filter-by-owner ul.vs__dropdown-menu {
-  border: none;
+.filter-by-owner ul.vs__dropdown-menu{
+  border:none;
   font-weight: bold;
   overflow-x: hidden;
 }
-
-.filter-by-owner ul.vs__dropdown-menu li {
+.filter-by-owner ul.vs__dropdown-menu li{
   border-bottom: 1px solid #f0f0f0;
   padding: 15px 0 15px 10px;
 }
 
-.vdp-datepicker [type="text"] {
+.vdp-datepicker [type='text'] {
   height: 2.4rem;
 }
-
-.vdp-datepicker input:read-only {
+.vdp-datepicker input:read-only{
   background: white;
   cursor: pointer;
 }
-
 #archive-results .vdp-datepicker__calendar .cell.selected,
 #archive-results .vdp-datepicker__calendar .cell.selected.highlighted,
 #archive-results .vdp-datepicker__calendar .cell.selected:hover {
   background: #25cef7;
 }
 
-.vs__dropdown-option--highlight.vs__dropdown-option {
+.vs__dropdown-option--highlight.vs__dropdown-option{
   background: #0f4d90;
   color: white;
 }
+td {
+  text-align: left;
+}
+
 </style>
