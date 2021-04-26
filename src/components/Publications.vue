@@ -1,5 +1,8 @@
 <template>
-  <div class="grid-container">
+  <div
+    id="publications"
+    class="grid-container"
+  >
     <div class="search">
       <input
         id="search-bar"
@@ -17,9 +20,9 @@
         @click="filterDocuments();"
       >
       <button
-        v-if="search > 0"
+        v-if="search.length > 0"
         class="clear-search-btn"
-        @click="clearAllFilters"
+        @click="clearSearch()"
       >
         <i class="fas fa-times" />
       </button>
@@ -28,30 +31,35 @@
       id="filter-results"
       class="bg-ghost-gray pam"
     >
+      <h6>Filter results</h6>
       <div class="filter-container grid-x grid-margin-x">
-        <div class="cell medium-6 small-10">
+        <div class="cell medium-5 small-10">
           <datepicker
             v-model="start"
             name="start"
             placeholder="Start date"
             format="MMM. dd, yyyy"
+            :typeable="true" 
+            :disabled-dates="{ from: new Date() }"
             @closed="filterDocuments()"
           />
-         
+        </div>
+        <div class="cell medium-1 small-10">
           <i class="fas fa-arrow-right" />
         </div>
         
-        <div class="cell medium-6 ">
+        <div class="cell medium-5 ">
           <datepicker
             v-model="end"
             name="end"
             placeholder="End date"
             format="MMM. dd, yyyy"
+            :typeable="true" 
+            :disabled-dates="{ from: new Date() }"
             @closed="filterDocuments()"
           />
         </div>
-        <div class="cell medium-6 filter-by-owner">
-          <h6>Filter results</h6>
+        <div class="cell medium-8 filter-by-owner">
           <v-select
             ref="categorySelect"
             v-model="department"
@@ -61,7 +69,7 @@
             @input="filterDocuments()"
           />
         </div>
-        <div class="cell medium-6 ">
+        <div class="cell medium-5 ">
           <a
             class="button content-type-featured full"
             @click="clearAllFilters()"
@@ -188,6 +196,13 @@ export default {
       },
     };
   },
+  watch: {
+    search(val) {
+      if(val == '') {
+        this.filterDocuments();
+      }
+    },
+  },
   mounted: async function () {
     await this.getDocuments();
     await this.getAllCategories();
@@ -196,9 +211,9 @@ export default {
 
   methods: {
     filterDocuments: async function () {
-      let datedDocuments = await this.searchFilter(this.documents);
-      let deptDocuments = await this.deptFilter(datedDocuments);
-      this.filteredDocuments = await this.searchFilter(deptDocuments);
+      let dateDocuments = await this.dateFilter(this.documents);
+      let searchDocuments = await this.searchFilter(dateDocuments);
+      this.filteredDocuments  = await this.deptFilter(searchDocuments);
     },
 
     dateFilter: async function (documents) {
@@ -302,6 +317,10 @@ export default {
       this.filterDocuments();
     },
 
+    clearSearch: function() {
+      this.search = '';
+    },
+
     scrollToTop: function () {
       window.scrollTo({
         top: 0,
@@ -314,11 +333,24 @@ export default {
 
 <style lang="scss">
 @import 'node_modules/vue-select/dist/vue-select';
+#publications {
+  max-width: 850px;
+}
 
+#filter-results {
+  h6 {
+   text-align:left;
+
+  }
+  i {
+    margin-top:10px; 
+  }
+}
 
 .filter-by-owner{
   font-family:"Open Sans", Helvetica, Roboto, Arial, sans-serif !important;
   // min-width: 300px;
+  
 }
 .filter-by-owner .v-select .vs__dropdown-toggle {
   border:none;
@@ -344,9 +376,22 @@ export default {
  background: white;
 }
 
-.vs__selected {
+.clear-search-btn {
   position: absolute;
-}
+  top: 16px;
+  right: 70px;
+  padding: 0;
+  font-size: 20px;
+  background-color: #fff;
+  opacity: 0.8;
+  z-index: 999;
+  cursor: pointer;
+  color: rgba(60, 60, 60, 0.5);
+  &:hover {
+    background: transparent;
+    color: black;
+  }
+} 
 .vs__clear:hover {
   background-color: transparent;
 }
@@ -386,7 +431,7 @@ export default {
 .vdp-datepicker [type='text'] {
   height: 2.4rem;
 }
-.vdp-datepicker input:read-only{
+.vdp-datepicker input{
   background: white;
   cursor: pointer;
 }
@@ -402,6 +447,10 @@ export default {
 }
 td {
   text-align: left;
+}
+
+.paginate-links{
+  float:right;
 }
 
 </style>
