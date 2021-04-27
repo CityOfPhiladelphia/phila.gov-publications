@@ -159,7 +159,7 @@ import VueFuse from "vue-fuse";
 Vue.use(VueFuse);
 Vue.use(VuePaginate);
 
-const pubsEndpoint = "https://phila.gov/wp-json/publications/v1/";
+const pubsEndpoint = "https://www.phila.gov/wp-json/publications/v1/";
 
 export default {
   name: "Publications",
@@ -262,12 +262,12 @@ export default {
 
     getAllCategories: async function () {
       return axios
-        .get("https://phila.gov/wp-json/the-latest/v1/categories")
+        .get("https://www.phila.gov/wp-json/the-latest/v1/categories")
         .then((response) => {
           this.endpointCategories = response.data;
         })
         .catch((e) => {
-          window.console.log(e);
+          console.log(e);
           this.endpointCategories = [];
         });
     },
