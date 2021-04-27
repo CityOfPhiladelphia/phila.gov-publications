@@ -79,11 +79,6 @@
     </div>
     <table class="stack theme-light archive-results">
       <thead
-        class="sticky center bg-white"
-        data-sticky
-        data-top-anchor="filter-results:bottom"
-        data-btm-anchor="page:bottom"
-        data-options="marginTop:4.8;"
       >
         <tr>
           <th class="table-sort title">
