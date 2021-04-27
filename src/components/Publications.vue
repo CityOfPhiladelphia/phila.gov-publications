@@ -300,8 +300,9 @@ export default {
           this.documents = response.data;
           this.filterDocuments();
         })
-        .catch(() => {
-          this.documents = "Sorry there was a problem";
+        .catch((e) => {
+          console.log(e);
+          this.failure = true;
         });
     },
 
