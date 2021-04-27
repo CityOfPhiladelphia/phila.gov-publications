@@ -290,7 +290,7 @@ export default {
 
     getDocuments: async function () {
       return axios
-        .get(pubsEndpoint + "archives")
+        .get(pubsEndpoint + "archives?count=-1")
         .then((response) => {
           this.documents = response.data;
           this.filterDocuments();
