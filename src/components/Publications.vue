@@ -448,6 +448,11 @@ export default {
  background: white;
 }
 
+.vs__selected {
+  position: absolute;
+  z-index: 2;
+}
+
 .clear-search-btn {
   position: absolute;
   top: 16px;
