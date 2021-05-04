@@ -16,6 +16,7 @@
         ref="archive-search-bar"
         type="submit"
         class="search-submit"
+        aria-label="submit search"
         value="Search"
         @click="filterDocuments();"
       >
@@ -36,7 +37,8 @@
         <div class="cell medium-5 small-10">
           <datepicker
             v-model="start"
-            name="start"
+            aria-label="Start date"
+            name="Start date"
             placeholder="Start date"
             format="MMM. dd, yyyy"
             :typeable="true" 
@@ -51,6 +53,7 @@
         <div class="cell medium-5 ">
           <datepicker
             v-model="end"
+            aria-label="End date"
             name="end"
             placeholder="End date"
             format="MMM. dd, yyyy"
@@ -77,14 +80,42 @@
         </div>
       </div>
     </div>
-    <table class="stack theme-light archive-results">
-      <thead
-      >
+    <div
+      v-show="loading"
+      class="mtm center"
+    >
+      <i class="fas fa-spinner fa-spin fa-3x" />
+    </div>
+    <div
+      v-show="!loading && emptyResponse"
+      class="h3 mtm center"
+    >
+      Sorry, there are no results.
+    </div>
+    <div
+      v-show="failure"
+      class="h3 mtm center"
+    >
+      Sorry, there was a problem. Please try again.
+    </div>
+    <table 
+      v-if="!loading && !failure"
+      class="stack theme-light archive-results"
+    >
+      <thead>
         <tr>
-          <th class="table-sort title">
+          <th 
+            :class="sortTitle"
+            class="table-sort title"
+            @click="sort('title')"
+          >
             <span>Title</span>
           </th>
-          <th class="table-sort date">
+          <th 
+            class="table-sort date"
+            :class="sortDate"
+            @click="sort('date')"
+          >
             <span>Publish date</span>
           </th>
           <th>Department</th>
@@ -102,13 +133,13 @@
           v-for="post in paginated('filteredDocuments')"
           :key="post.id"
           class="vue-clickable-row"
-          @click.stop.prevent="goToPost(post.link)"
+          @click.stop.prevent="goToDoc(post.link)"
         >
           <td class="title">
             <a
               :href="post.link"
               target="_blank"
-              @click.prevent="goToPost(post.link)"
+              @click.prevent="goToDoc(post.link)"
             >{{ post.title }}</a>
           </td>
           <td class="date">
@@ -177,6 +208,7 @@ export default {
       currentSortDir: "desc",
       search: "",
       failure: false,
+      loading: true,
       start: "",
       end: "",
       department: "",
@@ -190,6 +222,23 @@ export default {
         keys: [ "title" ],
       },
     };
+  },
+  computed: {
+    emptyResponse() {
+      return this.filteredDocuments.length == 0;
+    },
+    sortTitle: function(){
+      if (this.currentSort == 'title') {
+        return this.currentSortDir;
+      } 
+      return "";
+    },
+    sortDate: function(){
+      if (this.currentSort == 'date'){
+        return this.currentSortDir;
+      } 
+      return "";
+    },
   },
   watch: {
     search(val) {
@@ -294,6 +343,8 @@ export default {
         .then((response) => {
           this.documents = response.data;
           this.filterDocuments();
+          this.loading = false;
+          this.failure = false;
         })
         .catch((e) => {
           console.log(e);
@@ -311,6 +362,31 @@ export default {
       this.end = '';
       this.department = '';
       this.filterDocuments();
+    },
+
+    sort: function(column) {
+      //if column == current sort, reverse
+      if(column === this.currentSort) {
+        this.currentSortDir = this.currentSortDir === 'asc' ? 'desc' : 'asc';
+      }
+      this.currentSort = column;
+      this.sortPosts();
+    },
+
+    sortPosts: function() {
+      this.filteredDocuments = this.filteredDocuments.sort((a,b) => {
+        let modifier = 1;
+        if(this.currentSortDir === 'desc') {
+          modifier = -1;
+        }
+        if(a[this.currentSort] < b[this.currentSort]) {
+          return -1 * modifier;
+        }
+        if(a[this.currentSort] > b[this.currentSort]) {
+          return 1 * modifier;
+        }
+        return 0;
+      });
     },
 
     clearSearch: function() {
