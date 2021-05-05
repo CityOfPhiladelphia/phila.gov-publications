@@ -409,6 +409,9 @@ export default {
   max-width: 850px;
 }
 
+table {
+  font-size: 14px;
+}
 #filter-results {
   h6 {
    text-align:left;
