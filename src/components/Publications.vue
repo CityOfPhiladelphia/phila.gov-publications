@@ -525,6 +525,15 @@ table {
   background: #0f4d90;
   color: white;
 }
+
+.vdp-datepicker__calendar span.prev.disabled {
+    display: inline-block !important;
+  }
+
+  .vdp-datepicker__calendar span.next.disabled {
+    display: inline-block !important;
+  }
+  
 td {
   text-align: left;
 }
