@@ -185,8 +185,6 @@ import VueFuse from "vue-fuse";
 Vue.use(VueFuse);
 Vue.use(VuePaginate);
 
-const pubsEndpoint = "https://www.phila.gov/wp-json/publications/v1/";
-
 export default {
   name: "Publications",
   components: {
@@ -339,7 +337,7 @@ export default {
 
     getDocuments: async function () {
       return axios
-        .get(pubsEndpoint + "archives?count=-1")
+        .get("https://api.phila.gov/phila/publications/archives?count=-1")
         .then((response) => {
           this.documents = response.data;
           this.filterDocuments();
