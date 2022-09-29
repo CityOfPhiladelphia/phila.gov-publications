@@ -304,7 +304,7 @@ export default {
 
     getAllCategories: async function () {
       return axios
-        .get("https://www.phila.gov/wp-json/the-latest/v1/categories")
+        .get("https://api.phila.gov/phila/the-latest/categories")
         .then((response) => {
           this.endpointCategories = response.data;
         })
