@@ -324,8 +324,7 @@ export default {
         });
       });
       this.categories = this.categories.filter(
-        (item, index) => this.categories.indexOf(item) === index
-      );
+        (item, index) => this.categories.indexOf(item) === index);
       this.endpointCategories.forEach((category) => {
         this.endpointCategoriesSlang.push(category.slang_name);
       });
