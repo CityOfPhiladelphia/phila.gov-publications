@@ -309,7 +309,7 @@ export default {
           this.endpointCategories = response.data;
         })
         .catch((e) => {
-          console.log(e);
+          window.console.log(e);
           this.endpointCategories = [];
         });
     },
@@ -344,7 +344,7 @@ export default {
           this.failure = false;
         })
         .catch((e) => {
-          console.log(e);
+          window.console.log(e);
           this.failure = true;
         });
     },
