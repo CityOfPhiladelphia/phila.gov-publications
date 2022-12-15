@@ -32,7 +32,7 @@
       id="filter-results"
       class="bg-ghost-gray pam"
     >
-      <h6>Filter results</h6>
+      <h4>Filter results</h4>
       <div class="filter-container grid-x grid-margin-x">
         <div class="cell medium-5 small-10">
           <datepicker
@@ -74,7 +74,7 @@
         </div>
         <div class="cell medium-5 ">
           <a
-            class="button content-type-featured full"
+            class="button content-type-featured"
             @click="clearAllFilters()"
           >Clear filters</a>
         </div>
@@ -309,7 +309,7 @@ export default {
           this.endpointCategories = response.data;
         })
         .catch((e) => {
-          console.log(e);
+          window.console.log(e);
           this.endpointCategories = [];
         });
     },
@@ -324,8 +324,7 @@ export default {
         });
       });
       this.categories = this.categories.filter(
-        (item, index) => this.categories.indexOf(item) === index
-      );
+        (item, index) => this.categories.indexOf(item) === index);
       this.endpointCategories.forEach((category) => {
         this.endpointCategoriesSlang.push(category.slang_name);
       });
@@ -345,7 +344,7 @@ export default {
           this.failure = false;
         })
         .catch((e) => {
-          console.log(e);
+          window.console.log(e);
           this.failure = true;
         });
     },
@@ -411,7 +410,7 @@ table {
   font-size: 14px;
 }
 #filter-results {
-  h6 {
+  h4 {
    text-align:left;
 
   }
@@ -452,6 +451,30 @@ table {
 .vs__selected {
   position: absolute;
   z-index: 2;
+  white-space: nowrap;
+  max-width: 216px;
+  text-overflow:ellipsis;
+  overflow: hidden;
+  
+}
+
+a.button{
+  padding: 0.75rem 0.5rem;
+  width: 100%;
+}
+
+@media screen and (max-width: 750px){
+  .vs__selected {
+    max-width: 400px;
+  }
+
+  .v-select{
+    margin-bottom: 1rem;
+  }
+
+  a.button{
+    width:140px;
+  }
 }
 
 .clear-search-btn {
