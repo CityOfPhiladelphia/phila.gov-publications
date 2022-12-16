@@ -402,9 +402,6 @@ export default {
 
 <style lang="scss">
 @import 'node_modules/vue-select/dist/vue-select';
-#publications {
-  max-width: 850px;
-}
 
 table {
   font-size: 14px;
@@ -452,7 +449,7 @@ table {
   position: absolute;
   z-index: 2;
   white-space: nowrap;
-  max-width: 216px;
+  max-width: 280px;
   text-overflow:ellipsis;
   overflow: hidden;
   
@@ -464,10 +461,6 @@ a.button{
 }
 
 @media screen and (max-width: 750px){
-  .vs__selected {
-    max-width: 400px;
-  }
-
   .v-select{
     margin-bottom: 1rem;
   }
@@ -562,5 +555,4 @@ td {
 .paginate-links{
   float:right;
 }
-
 </style>
