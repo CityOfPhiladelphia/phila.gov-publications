@@ -237,6 +237,9 @@ export default {
       } 
       return "";
     },
+    currentRouteName() {
+      return this.isTranslated(this.$route.path) ? this.$route.path : null;
+    },
   },
   watch: {
     search(val) {
@@ -335,22 +338,39 @@ export default {
     },
 
     getDocuments: async function () {
+      let self = this;
       return axios
         .get("https://api.phila.gov/phila/publications/archives?count=-1")
         .then((response) => {
-          this.documents = response.data;
-          this.filterDocuments();
-          this.loading = false;
-          this.failure = false;
+          self.documents = response.data.map((item) => {
+            return {
+              categories:item.categories,
+              date:item.date,
+              id:item.id,
+              link: this.translateLink(item.link),
+              template:item.template,
+              title:item.title,
+            };
+          });
+          self.filterDocuments();
+          self.loading = false;
+          self.failure = false;
         })
         .catch((e) => {
           window.console.log(e);
           this.failure = true;
         });
     },
-
+    isTranslated(path) {
+      let langList = [ '/zh', '/es','/ar', '/fr', '/ru', '/ms', '/hi', '/pt', '/bn', '/id', '/sw', '/ja', '/de', '/ko', '/it', '/fa', '/tr', '/nl', '/te', '/vi', '/ht' ];
+      return (langList.indexOf(path) > -1);
+    },
+    translateLink(link) {
+      let self = this;
+      return self.currentRouteName ? self.currentRouteName+link : link;
+    },
     goToDoc: function (link) {
-      window.location.href = link;
+      window.location.href = this.translateLink(link);
     },
 
     clearAllFilters: function() {
