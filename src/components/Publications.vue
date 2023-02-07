@@ -376,7 +376,7 @@ export default {
       return self.currentRouteName ? self.currentRouteName+link : link;
     },
     goToDoc: function (link) {
-      window.location.href = this.translateLink(link);
+      window.location.href = link;
     },
 
     clearAllFilters: function() {
