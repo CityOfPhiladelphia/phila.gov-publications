@@ -137,7 +137,7 @@
         >
           <td class="title">
             <a
-              :href="post.link"
+              :href="translateLink(post.link)"
               target="_blank"
               @click.prevent="goToDoc(post.link)"
             >{{ post.title }}</a>
@@ -237,6 +237,30 @@ export default {
       } 
       return "";
     },
+
+    slug() {
+      let language = this.isTranslated(window.location.pathname);
+      if (language == '/es') {
+        return 'http://translated-endpoints-json.s3-website-us-east-1.amazonaws.com/departments-prod.json';
+      } else if (language == '/zh') {
+        return 'http://translated-endpoints-json.s3-website-us-east-1.amazonaws.com/departments-prod.json';
+      }
+      return "https://api.phila.gov/phila/publications/archives?count=-1";
+    },
+    currentRouteName() {
+      return this.isTranslated(window.location.pathname);
+    },
+
+    categoriesSlug(){
+      let language = this.isTranslated(window.location.pathname);
+      if (language == '/es') {
+        return 'http://translated-endpoints-json.s3-website-us-east-1.amazonaws.com/departments-prod.json';
+      } else if (language == '/zh') {
+        return 'http://translated-endpoints-json.s3-website-us-east-1.amazonaws.com/departments-prod.json';
+      }
+      return "https://api.phila.gov/phila/the-latest/categories";
+    },
+  
   },
   watch: {
     search(val) {
@@ -252,6 +276,21 @@ export default {
   },
 
   methods: {
+    isTranslated(path) {
+      let splitPath = path.split("/");
+      const langList = [ 'zh', 'es','ar', 'fr', 'ru', 'ms', 'hi', 'pt', 'bn', 'id', 'sw', 'ja', 'de', 'ko', 'it', 'fa', 'tr', 'nl', 'te', 'vi', 'ht' ];
+      for (let i = 0; i < splitPath.length; i++) {
+        if (langList.indexOf(splitPath[i]) > -1) {
+          return '/'+splitPath[i];
+        }
+      }
+      return null;
+    },
+    translateLink(link) {
+      let self = this;
+      return self.currentRouteName ? self.currentRouteName+link : link;
+    },
+
     filterDocuments: async function () {
       let dateDocuments = await this.dateFilter(this.documents);
       let searchDocuments = await this.searchFilter(dateDocuments);
@@ -304,7 +343,7 @@ export default {
 
     getAllCategories: async function () {
       return axios
-        .get("https://api.phila.gov/phila/the-latest/categories")
+        .get(this.categoriesSlug)
         .then((response) => {
           this.endpointCategories = response.data;
         })
@@ -336,7 +375,7 @@ export default {
 
     getDocuments: async function () {
       return axios
-        .get("https://api.phila.gov/phila/publications/archives?count=-1")
+        .get(this.slug)
         .then((response) => {
           this.documents = response.data;
           this.filterDocuments();
