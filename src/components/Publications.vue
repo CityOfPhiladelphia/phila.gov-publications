@@ -241,12 +241,13 @@ export default {
     slug() {
       let language = this.isTranslated(window.location.pathname);
       if (language == '/es') {
-        return 'http://translated-endpoints-json.s3-website-us-east-1.amazonaws.com/departments-prod.json';
+        return 'https://translated-endpoints-json.s3.amazonaws.com/es/phila_publications_archives.json';
       } else if (language == '/zh') {
-        return 'http://translated-endpoints-json.s3-website-us-east-1.amazonaws.com/departments-prod.json';
+        return 'https://translated-endpoints-json.s3.amazonaws.com/zh/phila_publications_archives.json';
       }
       return "https://api.phila.gov/phila/publications/archives?count=-1";
     },
+
     currentRouteName() {
       return this.isTranslated(window.location.pathname);
     },
@@ -286,6 +287,7 @@ export default {
       }
       return null;
     },
+
     translateLink(link) {
       let self = this;
       return self.currentRouteName ? self.currentRouteName+link : link;
