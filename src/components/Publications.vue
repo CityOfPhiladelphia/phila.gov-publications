@@ -217,7 +217,7 @@ export default {
       paginate: [ "filteredDocuments" ],
       searchOptions: {
         shouldSort: false,
-        threshold: 0.3,
+        threshold: 0.4,
         keys: [ "title" ],
       },
     };
@@ -265,9 +265,9 @@ export default {
 
     categoriesSlug(){
       if (this.language == 'es') {
-        return 'http://translated-endpoints-json.s3-website-us-east-1.amazonaws.com/departments-prod.json';
+        return 'https://api.phila.gov/phila/the-latest/categories';
       } else if (this.language == 'zh') {
-        return 'http://translated-endpoints-json.s3-website-us-east-1.amazonaws.com/departments-prod.json';
+        return 'https://api.phila.gov/phila/the-latest/categories';
       }
       return "https://api.phila.gov/phila/the-latest/categories";
     },
