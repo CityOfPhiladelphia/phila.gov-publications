@@ -265,9 +265,9 @@ export default {
 
     categoriesSlug(){
       if (this.language == 'es') {
-        return 'https://api.phila.gov/phila/the-latest/categories';
+        return 'https://translated-endpoints-json.s3.amazonaws.com/es/phila_the-latest_categories.json';
       } else if (this.language == 'zh') {
-        return 'https://api.phila.gov/phila/the-latest/categories';
+        return 'https://translated-endpoints-json.s3.amazonaws.com/zh/phila_the-latest_categories.json';
       }
       return "https://api.phila.gov/phila/the-latest/categories";
     },
