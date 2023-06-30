@@ -245,6 +245,8 @@ export default {
         return 'es';
       } else if (lang =='/zh') {
         return 'zh';
+      } else if (lang =='/ar') {
+        return 'ar';
       }
       return 'en';
     },
@@ -255,6 +257,8 @@ export default {
         return 'https://translated-endpoints-json.s3.amazonaws.com/es/phila_publications_archives.json';
       } else if (this.language == 'zh') {
         return 'https://translated-endpoints-json.s3.amazonaws.com/zh/phila_publications_archives.json';
+      } else if (this.language == 'ar') {
+        return 'https://translated-endpoints-json.s3.amazonaws.com/ar/phila_publications_archives.json';
       }
       return "https://api.phila.gov/phila/publications/archives?count=-1";
     },
@@ -265,9 +269,11 @@ export default {
 
     categoriesSlug(){
       if (this.language == 'es') {
-        return 'https://api.phila.gov/phila/the-latest/categories';
+        return 'https://translated-endpoints-json.s3.amazonaws.com/es/phila_the-latest_categories.json';
       } else if (this.language == 'zh') {
-        return 'https://api.phila.gov/phila/the-latest/categories';
+        return 'https://translated-endpoints-json.s3.amazonaws.com/zh/phila_the-latest_categories.json';
+      } else if (this.language == 'ar') {
+        return 'https://translated-endpoints-json.s3.amazonaws.com/ar/phila_the-latest_categories.json';
       }
       return "https://api.phila.gov/phila/the-latest/categories";
     },
