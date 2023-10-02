@@ -298,10 +298,10 @@ export default {
     },
   },
   mounted: async function () {
+    loadLanguageAsync(this.language);
     await this.getDocuments();
     await this.getAllCategories();
     await this.getDropdownCategories();
-    loadLanguageAsync(this.language);
   },
 
   methods: {
