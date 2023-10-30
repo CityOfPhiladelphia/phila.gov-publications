@@ -238,7 +238,6 @@ export default {
       } 
       return "";
     },
-
     language() {
       let lang = this.isTranslated(window.location.pathname);
       const validLanguages = [ '/es', '/zh', '/ar', '/ht', '/fr', '/sw', '/pt', '/ru', '/vi' ];
@@ -288,7 +287,6 @@ export default {
       } 
       return "https://api.phila.gov/phila/the-latest/categories";
     },
-  
   },
   watch: {
     search(val) {
@@ -404,20 +402,43 @@ export default {
     },
 
     getDocuments: async function () {
+      let self = this;
       return axios
         .get(this.slug)
         .then((response) => {
-          this.documents = response.data;
-          this.filterDocuments();
-          this.loading = false;
-          this.failure = false;
+          self.documents = response.data.map((item) => {
+            return {
+              categories:item.categories,
+              date:item.date,
+              id:item.id,
+              link: this.translateLink(item.link),
+              template:item.template,
+              title:item.title,
+            };
+          });
+          self.filterDocuments();
+          self.loading = false;
+          self.failure = false;
         })
         .catch((e) => {
           window.console.log(e);
           this.failure = true;
         });
     },
-
+    isTranslated(path) {
+      let splitPath = path.split("/");
+      const langList = [ 'zh', 'es','ar', 'fr', 'ru', 'ms', 'hi', 'pt', 'bn', 'id', 'sw', 'ja', 'de', 'ko', 'it', 'fa', 'tr', 'nl', 'te', 'vi', 'ht' ];
+      for (let i = 0; i < splitPath.length; i++) {
+        if (langList.indexOf(splitPath[i]) > -1) {
+          return '/'+splitPath[i];
+        }
+      }
+      return null;
+    },
+    translateLink(link) {
+      let self = this;
+      return self.currentRouteName ? self.currentRouteName+link : link;
+    },
     goToDoc: function (link) {
       window.location.href = link;
     },
