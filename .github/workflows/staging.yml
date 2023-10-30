@@ -1,8 +1,8 @@
-name: Deploy test  to s3
+name: Deploy staging  to s3
 on:
   push:
     branches:
-      - test
+      - staging
 jobs:
   build:
     name: Build files
