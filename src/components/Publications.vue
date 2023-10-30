@@ -9,7 +9,7 @@
         v-model="search"
         class="search-field"
         type="text"
-        placeholder="Filter documents by title"
+        :placeholder="$t('Filter documents')"
         @keyup.enter="filterDocuments();"
       >
       <input
@@ -32,14 +32,14 @@
       id="filter-results"
       class="bg-ghost-gray pam"
     >
-      <h4>Filter results</h4>
+      <h4>{{ $t('Filter results') }}</h4>
       <div class="filter-container grid-x grid-margin-x">
         <div class="cell medium-5 small-10">
           <datepicker
             v-model="start"
             aria-label="Start date"
             name="Start date"
-            placeholder="Start date"
+            :placeholder="$t('Start date')"
             format="MMM. dd, yyyy"
             :typeable="true" 
             :disabled-dates="{ from: new Date() }"
@@ -55,7 +55,7 @@
             v-model="end"
             aria-label="End date"
             name="end"
-            placeholder="End date"
+            :placeholder="$t('End date')"
             format="MMM. dd, yyyy"
             :typeable="true" 
             :disabled-dates="{ from: new Date() }"
@@ -67,7 +67,7 @@
             ref="categorySelect"
             v-model="department"
             label="slang_name"
-            placeholder="All departments"
+            :placeholder="$t('All departments')"
             :options="categories"
             @input="filterDocuments()"
           />
@@ -76,7 +76,7 @@
           <a
             class="button content-type-featured"
             @click="clearAllFilters()"
-          >Clear filters</a>
+          >{{ $t('Clear filters') }}</a>
         </div>
       </div>
     </div>
@@ -90,13 +90,13 @@
       v-show="!loading && emptyResponse"
       class="h3 mtm center"
     >
-      Sorry, there are no results.
+      {{ $t('No results') }}
     </div>
     <div
       v-show="failure"
       class="h3 mtm center"
     >
-      Sorry, there was a problem. Please try again.
+      {{ $t('There was a problem') }}
     </div>
     <table 
       v-if="!loading && !failure"
@@ -109,16 +109,16 @@
             class="table-sort title"
             @click="sort('title')"
           >
-            <span>Title</span>
+            <span>{{ $t('Title') }}</span>
           </th>
           <th 
             class="table-sort date"
             :class="sortDate"
             @click="sort('date')"
           >
-            <span>Publish date</span>
+            <span>{{ $t('Publish date') }}</span>
           </th>
-          <th>Department</th>
+          <th>{{ $t('Department') }}</th>
         </tr>
       </thead>
       <!-- <tbody> -->
@@ -137,7 +137,7 @@
         >
           <td class="title">
             <a
-              :href="post.link"
+              :href="translateLink(post.link)"
               target="_blank"
               @click.prevent="goToDoc(post.link)"
             >{{ post.title }}</a>
@@ -165,8 +165,8 @@
       :show-step-links="true"
       :hide-single-page="false"
       :step-links="{
-        next: 'Next',
-        prev: 'Previous'
+        next: $t('Next'),
+        prev: $t('Previous')
       }"
       @change="scrollToTop"
     />
@@ -181,6 +181,7 @@ import vSelect from "vue-select";
 import Datepicker from "vuejs-datepicker";
 import VuePaginate from "vue-paginate";
 import VueFuse from "vue-fuse";
+import { loadLanguageAsync } from './../i18n.js';
 
 Vue.use(VueFuse);
 Vue.use(VuePaginate);
@@ -216,7 +217,7 @@ export default {
       paginate: [ "filteredDocuments" ],
       searchOptions: {
         shouldSort: false,
-        threshold: 0.3,
+        threshold: 0.4,
         keys: [ "title" ],
       },
     };
@@ -237,8 +238,54 @@ export default {
       } 
       return "";
     },
+    language() {
+      let lang = this.isTranslated(window.location.pathname);
+      const validLanguages = [ '/es', '/zh', '/ar', '/ht', '/fr', '/sw', '/pt', '/ru', '/vi' ];
+      if (validLanguages.includes(lang)) {
+        return lang.substring(1); 
+      } 
+      return 'en'; 
+    },
+
+    slug() {
+      const languageUrls = {
+        'es': 'https://translated-endpoints-json.s3.amazonaws.com/es/phila_publications_archives.json',
+        'zh': 'https://translated-endpoints-json.s3.amazonaws.com/zh/phila_publications_archives.json',
+        'ar': 'https://translated-endpoints-json.s3.amazonaws.com/ar/phila_publications_archives.json',
+        'ht': 'https://translated-endpoints-json.s3.amazonaws.com/ht/phila_publications_archives.json',
+        'fr': 'https://translated-endpoints-json.s3.amazonaws.com/fr/phila_publications_archives.json',
+        'sw': 'https://translated-endpoints-json.s3.amazonaws.com/sw/phila_publications_archives.json',
+        'pt': 'https://translated-endpoints-json.s3.amazonaws.com/pt/phila_publications_archives.json',
+        'ru': 'https://translated-endpoints-json.s3.amazonaws.com/ru/phila_publications_archives.json',
+        'vi': 'https://translated-endpoints-json.s3.amazonaws.com/vi/phila_publications_archives.json',
+      };
+      if (languageUrls[this.language]) {
+        return languageUrls[this.language];
+      } 
+      return "https://api.phila.gov/phila/publications/archives?count=-1";
+    },
+
     currentRouteName() {
       return this.isTranslated(window.location.pathname);
+    },
+
+    categoriesSlug(){
+      const categoryUrls = {
+        'es': 'https://translated-endpoints-json.s3.amazonaws.com/es/phila_the-latest_categories.json',
+        'zh': 'https://translated-endpoints-json.s3.amazonaws.com/zh/phila_the-latest_categories.json',
+        'ar': 'https://translated-endpoints-json.s3.amazonaws.com/ar/phila_the-latest_categories.json',
+        'ht': 'https://translated-endpoints-json.s3.amazonaws.com/ht/phila_the-latest_categories.json',
+        'fr': 'https://translated-endpoints-json.s3.amazonaws.com/fr/phila_the-latest_categories.json',
+        'sw': 'https://translated-endpoints-json.s3.amazonaws.com/sw/phila_the-latest_categories.json',
+        'pt': 'https://translated-endpoints-json.s3.amazonaws.com/pt/phila_the-latest_categories.json',
+        'ru': 'https://translated-endpoints-json.s3.amazonaws.com/ru/phila_the-latest_categories.json',
+        'vi': 'https://translated-endpoints-json.s3.amazonaws.com/vi/phila_the-latest_categories.json',
+      };
+
+      if (categoryUrls[this.language]) {
+        return categoryUrls[this.language];
+      } 
+      return "https://api.phila.gov/phila/the-latest/categories";
     },
   },
   watch: {
@@ -249,12 +296,29 @@ export default {
     },
   },
   mounted: async function () {
+    loadLanguageAsync(this.language);
     await this.getDocuments();
     await this.getAllCategories();
     await this.getDropdownCategories();
   },
 
   methods: {
+    isTranslated(path) {
+      let splitPath = path.split("/");
+      const langList = [ 'zh', 'es','ar', 'fr', 'ru', 'ms', 'hi', 'pt', 'bn', 'id', 'sw', 'ja', 'de', 'ko', 'it', 'fa', 'tr', 'nl', 'te', 'vi', 'ht' ];
+      for (let i = 0; i < splitPath.length; i++) {
+        if (langList.indexOf(splitPath[i]) > -1) {
+          return '/'+splitPath[i];
+        }
+      }
+      return null;
+    },
+
+    translateLink(link) {
+      let self = this;
+      return self.currentRouteName ? self.currentRouteName+link : link;
+    },
+
     filterDocuments: async function () {
       let dateDocuments = await this.dateFilter(this.documents);
       let searchDocuments = await this.searchFilter(dateDocuments);
@@ -307,7 +371,7 @@ export default {
 
     getAllCategories: async function () {
       return axios
-        .get("https://api.phila.gov/phila/the-latest/categories")
+        .get(this.categoriesSlug)
         .then((response) => {
           this.endpointCategories = response.data;
         })
@@ -340,7 +404,7 @@ export default {
     getDocuments: async function () {
       let self = this;
       return axios
-        .get("https://api.phila.gov/phila/publications/archives?count=-1")
+        .get(this.slug)
         .then((response) => {
           self.documents = response.data.map((item) => {
             return {
