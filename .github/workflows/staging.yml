@@ -1,21 +1,22 @@
-name: Deploy test  to s3
+name: Deploy staging  to s3
 on:
   push:
     branches:
-      - test
+      - staging
 jobs:
   build:
     name: Build files
     runs-on: ubuntu-latest
     steps: 
+      - uses: actions/checkout@master
       - name: Setup node
         uses: actions/setup-node@v3
         with: 
             node-version: 16
-      - uses: actions/checkout@master
+            cache: 'npm'
       - name: Build project files
         run: |
-          npm install
+          npm ci
           npm run build
       - name: Deploy to s3
         env: 
