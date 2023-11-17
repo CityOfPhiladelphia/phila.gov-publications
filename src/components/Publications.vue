@@ -249,21 +249,14 @@ export default {
     },
 
     slug() {
-      const languageUrls = {
-        'es': 'https://translated-endpoints-json.s3.amazonaws.com/es/phila_publications_archives.json',
-        'zh': 'https://translated-endpoints-json.s3.amazonaws.com/zh/phila_publications_archives.json',
-        'ar': 'https://translated-endpoints-json.s3.amazonaws.com/ar/phila_publications_archives.json',
-        'ht': 'https://translated-endpoints-json.s3.amazonaws.com/ht/phila_publications_archives.json',
-        'fr': 'https://translated-endpoints-json.s3.amazonaws.com/fr/phila_publications_archives.json',
-        'sw': 'https://translated-endpoints-json.s3.amazonaws.com/sw/phila_publications_archives.json',
-        'pt': 'https://translated-endpoints-json.s3.amazonaws.com/pt/phila_publications_archives.json',
-        'ru': 'https://translated-endpoints-json.s3.amazonaws.com/ru/phila_publications_archives.json',
-        'vi': 'https://translated-endpoints-json.s3.amazonaws.com/vi/phila_publications_archives.json',
-      };
-      if (languageUrls[this.language]) {
-        return languageUrls[this.language];
-      } 
-      return "https://api.phila.gov/phila/publications/archives?count=-1";
+      let vm = this;
+      if (vm.language == 'en') {
+        return "https://api.phila.gov/phila/publications/archives?count=-1";
+      }
+
+      const languageCode = vm.language; 
+      const url = process.env.VUE_APP_BUCKET_URL + `${languageCode}/phila_publications_archives.json`;
+      return url;
     },
 
     currentRouteName() {
@@ -271,22 +264,13 @@ export default {
     },
 
     categoriesSlug(){
-      const categoryUrls = {
-        'es': 'https://translated-endpoints-json.s3.amazonaws.com/es/phila_the-latest_categories.json',
-        'zh': 'https://translated-endpoints-json.s3.amazonaws.com/zh/phila_the-latest_categories.json',
-        'ar': 'https://translated-endpoints-json.s3.amazonaws.com/ar/phila_the-latest_categories.json',
-        'ht': 'https://translated-endpoints-json.s3.amazonaws.com/ht/phila_the-latest_categories.json',
-        'fr': 'https://translated-endpoints-json.s3.amazonaws.com/fr/phila_the-latest_categories.json',
-        'sw': 'https://translated-endpoints-json.s3.amazonaws.com/sw/phila_the-latest_categories.json',
-        'pt': 'https://translated-endpoints-json.s3.amazonaws.com/pt/phila_the-latest_categories.json',
-        'ru': 'https://translated-endpoints-json.s3.amazonaws.com/ru/phila_the-latest_categories.json',
-        'vi': 'https://translated-endpoints-json.s3.amazonaws.com/vi/phila_the-latest_categories.json',
-      };
-
-      if (categoryUrls[this.language]) {
-        return categoryUrls[this.language];
-      } 
-      return "https://api.phila.gov/phila/the-latest/categories";
+      let vm = this;
+      if (vm.language == 'en') {
+        return "https://api.phila.gov/phila/the-latest/categories";
+      }
+      const languageCode = vm.language;
+      const url = process.env.VUE_APP_BUCKET_URL + `${languageCode}/phila_the-latest_categories.json`;
+      return url;
     },
   
   },
