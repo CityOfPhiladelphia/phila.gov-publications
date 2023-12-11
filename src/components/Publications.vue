@@ -269,7 +269,7 @@ export default {
         return "https://api.phila.gov/phila/the-latest/categories";
       }
       const languageCode = vm.language;
-      const url = process.env.VUE_APP_BUCKET_URL + `${languageCode}/phila_the-latest_categories.json`;
+      const url = process.env.VUE_APP_BUCKET_URL + `${languageCode}/phila_the_latest_categories.json`;
       return url;
     },
   
