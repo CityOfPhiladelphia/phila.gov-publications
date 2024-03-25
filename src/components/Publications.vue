@@ -361,7 +361,8 @@ export default {
     filterDocuments: async function () {
       let dateDocuments = await this.dateFilter(this.documents);
       let searchDocuments = await this.searchFilter(dateDocuments);
-      this.filteredDocuments  = await this.deptFilter(searchDocuments);
+      let deptDocuments = await this.deptFilter(searchDocuments);
+      this.filteredDocuments = deptDocuments;
     },
 
     dateFilter: async function (documents) {
@@ -390,7 +391,7 @@ export default {
 
     deptFilter: async function (documents) {
       if (this.department !== "" && this.department !== null) {
-        return this.documents.filter((document) => {
+        return documents.filter((document) => {
           return document.categories.find((category) => {
             if (category.slang_name === this.department) {
               return true;
