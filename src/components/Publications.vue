@@ -101,13 +101,13 @@
     </div>
     <div class="filter-summary">
       <span 
-        v-if="showFilterSummary" 
+        v-if="showFilterSummary && !emptyResponse" 
         class="result-summary"
       >
         Showing {{ filteredDocuments.length }} results out of {{ documents.length }} in <b><em>Documents</em></b><span v-if="search.length > 0"> for <b><em>"{{ search }}"</em></b></span>
       </span>
       
-      <span v-if="department !== ''">
+      <span v-if="department !== '' && !emptyResponse">
         <button 
           class="filter-button"
           @click="showFilterSummary = false; clearDepartment()"
@@ -117,7 +117,7 @@
         </button>
       </span>
 
-      <span v-if="start !== '' && end !== ''">
+      <span v-if="start !== '' && end !== '' && !emptyResponse">
         <button 
           class="filter-button"
           @click="showFilterSummary = false; clearDates()"
