@@ -10,7 +10,7 @@
         class="search-field"
         type="text"
         :placeholder="$t('Filter documents')"
-        @keyup.enter="filterDocuments();"
+        @keyup.enter="showFilterSummary = true; filterDocuments();"
       >
       <input
         ref="archive-search-bar"
@@ -18,12 +18,12 @@
         class="search-submit"
         aria-label="submit search"
         value="Search"
-        @click="filterDocuments();"
+        @click="showFilterSummary = true; filterDocuments();"
       >
       <button
         v-if="search.length > 0"
         class="clear-search-btn"
-        @click="clearSearch()"
+        @click="showFilterSummary = false; clearSearch()"
       >
         <i class="fas fa-times" />
       </button>
@@ -69,13 +69,14 @@
             label="slang_name"
             :placeholder="$t('All departments')"
             :options="categories"
-            @input="filterDocuments()"
+            :clearable="false"
+            @input="showFilterSummary = true; filterDocuments()"
           />
         </div>
         <div class="cell medium-5 ">
           <a
             class="button content-type-featured"
-            @click="clearAllFilters()"
+            @click="showFilterSummary = false; clearAllFilters()"
           >{{ $t('Clear filters') }}</a>
         </div>
       </div>
@@ -97,6 +98,43 @@
       class="h3 mtm center"
     >
       {{ $t('There was a problem') }}
+    </div>
+    <div class="filter-summary">
+      <span 
+        v-if="showFilterSummary && !emptyResponse" 
+        class="result-summary"
+      >
+        Showing {{ filteredDocuments.length }} results out of {{ documents.length }} in <b><em>Documents</em></b><span v-if="search.length > 0"> for <b><em>"{{ search }}"</em></b></span>
+      </span>
+      
+      <span v-if="department !== '' && !emptyResponse">
+        <button 
+          class="filter-button"
+          @click="showFilterSummary = false; clearDepartment()"
+        >
+          {{ department }}
+          <i class="far fa-times" />
+        </button>
+      </span>
+
+      <span v-if="start !== '' && end !== '' && !emptyResponse">
+        <button 
+          class="filter-button"
+          @click="showFilterSummary = false; clearDates()"
+        > 
+          {{ start | formatFilterDate }} - {{ end | formatFilterDate }}
+          <i class="far fa-times" />
+        </button>
+      </span>
+
+      <span v-if="department !== ''">
+        <input
+          type="submit"
+          class="clear-button"
+          value="Clear all"
+          @click="showFilterSummary = false; clearAllFilters()"
+        >
+      </span>
     </div>
     <table 
       v-if="!loading && !failure"
@@ -198,6 +236,9 @@ export default {
         return moment(String(value)).format("MMM. DD, YYYY");
       }
     },
+    formatFilterDate: function (value) {
+      return moment(String(value)).format("MM/DD/YY");
+    },
   },
   data: function () {
     return {
@@ -211,6 +252,7 @@ export default {
       start: "",
       end: "",
       department: "",
+      showFilterSummary: "",
       endpointCategories: [],
       endpointCategoriesSlang: [],
       filteredDocuments: [],
@@ -300,6 +342,17 @@ export default {
       return null;
     },
 
+    clearDepartment() {
+      this.department = '';
+      this.filterDocuments();
+    },
+
+    clearDates() {
+      this.start = '';
+      this.end = '';
+      this.filterDocuments();
+    },
+
     translateLink(link) {
       let self = this;
       return self.currentRouteName ? self.currentRouteName+link : link;
@@ -308,7 +361,8 @@ export default {
     filterDocuments: async function () {
       let dateDocuments = await this.dateFilter(this.documents);
       let searchDocuments = await this.searchFilter(dateDocuments);
-      this.filteredDocuments  = await this.deptFilter(searchDocuments);
+      let deptDocuments = await this.deptFilter(searchDocuments);
+      this.filteredDocuments = deptDocuments;
     },
 
     dateFilter: async function (documents) {
@@ -327,6 +381,7 @@ export default {
             datedDocuments.push(document);
           }
         });
+        this.showFilterSummary = true;
         return datedDocuments;
         
       } 
@@ -336,7 +391,7 @@ export default {
 
     deptFilter: async function (documents) {
       if (this.department !== "" && this.department !== null) {
-        return this.documents.filter((document) => {
+        return documents.filter((document) => {
           return document.categories.find((category) => {
             if (category.slang_name === this.department) {
               return true;
@@ -411,6 +466,7 @@ export default {
       this.start = '';
       this.end = '';
       this.department = '';
+      this.showFilterSummary = false;
       this.filterDocuments();
     },
 
@@ -487,6 +543,38 @@ table {
   width: 30px;
   height:100%;
   fill: #0f4d90;
+}
+
+.filter-summary{
+  margin: 16px 0px 16px 0px;
+  text-align: left;
+}
+
+.result-summary {
+  margin-right: 8px;
+}
+
+.filter-button{
+  margin: 0px 8px 8px 0px;
+  padding: 4px;
+  border-radius: 4px;
+  background-color: #cfcfcf;
+  color: #333333;
+  line-height: normal;
+  text-transform: capitalize;
+  font-weight: normal;
+  cursor: pointer;
+}
+
+
+.clear-button{
+  margin: 0px 8px 0px 8px;
+  border: none;
+  background-color: transparent;
+  color: #0f4d90;
+  cursor: pointer;
+  font-weight: 700;
+  text-decoration: underline;
 }
 
 .v-select .vs__actions{
