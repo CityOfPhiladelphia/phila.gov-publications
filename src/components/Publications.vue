@@ -88,46 +88,47 @@
       <i class="fas fa-spinner fa-spin fa-3x" />
     </div>
     <div
-      v-show="!loading && emptyResponse"
-      class="h3 mtm center"
-    >
-      {{ $t('No results') }}
-    </div>
-    <div
       v-show="failure"
       class="h3 mtm center"
     >
       {{ $t('There was a problem') }}
     </div>
     <div class="filter-summary">
-      <span 
-        v-if="showFilterSummary && !emptyResponse" 
-        class="result-summary"
-      >
-        Showing {{ filteredDocuments.length }} results out of {{ documents.length }} in <b><em>Documents</em></b><span v-if="search.length > 0"> for <b><em>"{{ search }}"</em></b></span>
+      <span class="result-summary">
+        <span v-if="emptyResponse">
+          No results found for<span v-if="search.length > 0"><b><em>"{{ search }}"</em></b></span>
+        </span>
+        <span v-else>
+          <span v-if="showFilterSummary || start !== '' && end !== '' || department !== ''">
+            Showing {{ filteredDocuments.length }} results out of {{ documents.length }} records for<span v-if="search.length > 0"><b><em>"{{ search }}"</em></b></span>
+          </span>
+          <span v-else>
+            Showing {{ filteredDocuments.length }} results out of {{ documents.length }} records
+          </span>
+        </span>
       </span>
-      
-      <span v-if="department !== '' && !emptyResponse">
+
+      <span v-if="department !== ''">
         <button 
           class="filter-button"
           @click="showFilterSummary = false; clearDepartment()"
         >
           {{ department }}
-          <i class="far fa-times" />
+          <i class="fa-solid fa-xmark" />
         </button>
       </span>
 
-      <span v-if="start !== '' && end !== '' && !emptyResponse">
+      <span v-if="start !== '' && end !== ''">
         <button 
           class="filter-button"
           @click="showFilterSummary = false; clearDates()"
         > 
           {{ start | formatFilterDate }} - {{ end | formatFilterDate }}
-          <i class="far fa-times" />
+          <i class="fa-solid fa-xmark" />
         </button>
       </span>
 
-      <span v-if="department !== ''">
+      <span v-if="showFilterSummary || start !== '' && end !== '' || department !== ''">
         <input
           type="submit"
           class="clear-button"
@@ -375,13 +376,13 @@ export default {
         } 
         this.failure = false;
         let datedDocuments = [];
+        this.showFilterSummary = true;
         documents.forEach((document) => {
           let documentDate = moment(document.date).unix();
           if (documentDate >= queryStart && documentDate <= queryEnd) {
             datedDocuments.push(document);
           }
         });
-        this.showFilterSummary = true;
         return datedDocuments;
         
       } 
@@ -391,6 +392,7 @@ export default {
 
     deptFilter: async function (documents) {
       if (this.department !== "" && this.department !== null) {
+        this.showFilterSummary = true;
         return documents.filter((document) => {
           return document.categories.find((category) => {
             if (category.slang_name === this.department) {
@@ -556,7 +558,8 @@ table {
 
 .filter-button{
   margin: 0px 8px 8px 0px;
-  padding: 4px;
+  padding: 6px;
+  border: 2px solid transparent;
   border-radius: 4px;
   background-color: #cfcfcf;
   color: #333333;
@@ -566,9 +569,13 @@ table {
   cursor: pointer;
 }
 
+.filter-button:hover {
+  border-color: #2176d2;
+  background-color: #cfcfcf;
+  color: #333333;
+}
 
 .clear-button{
-  margin: 0px 8px 0px 8px;
   border: none;
   background-color: transparent;
   color: #0f4d90;
