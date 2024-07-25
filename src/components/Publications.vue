@@ -135,7 +135,16 @@
         >
       </span>
       <div v-if="emptyResponse" class="helper-text">
-        There were no results found matching your search settings. Try adjusting the filters or using different search terms. To start a new search, select Clear all.
+        There were no results found matching your search. Try adjusting your search settings.
+        <br>
+        <br>
+        Here are some options:
+        <ul>
+          <li>Use different or fewer search terms</li>
+          <li>Check your spelling</li>
+          <li>Remove or adjust any filters</li>
+        </ul>
+        Want to start over? Select Clear all to reset the search settings.
       </div>
     </div>
     <table 
