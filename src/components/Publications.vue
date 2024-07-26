@@ -10,7 +10,7 @@
         class="search-field"
         type="text"
         :placeholder="$t('Filter documents')"
-        @keyup.enter="showFilterSummary = true; filterDocuments();"
+        @keyup.enter="filterDocuments()"
       >
       <input
         ref="archive-search-bar"
@@ -18,12 +18,12 @@
         class="search-submit"
         aria-label="submit search"
         value="Search"
-        @click="showFilterSummary = true; filterDocuments();"
+        @click="filterDocuments()"
       >
       <button
         v-if="search.length > 0"
         class="clear-search-btn"
-        @click="showFilterSummary = false; clearSearch()"
+        @click="clearSearch()"
       >
         <i class="fas fa-times" />
       </button>
@@ -70,13 +70,13 @@
             :placeholder="$t('All departments')"
             :options="categories"
             :clearable="false"
-            @input="showFilterSummary = true; filterDocuments()"
+            @input="filterDocuments()"
           />
         </div>
         <div class="cell medium-5 ">
           <a
             class="button content-type-featured"
-            @click="showFilterSummary = false; clearAllFilters()"
+            @click="clearAllFilters()"
           >{{ $t('Clear filters') }}</a>
         </div>
       </div>
@@ -88,56 +88,67 @@
       <i class="fas fa-spinner fa-spin fa-3x" />
     </div>
     <div
-      v-show="!loading && emptyResponse"
-      class="h3 mtm center"
-    >
-      {{ $t('No results') }}
-    </div>
-    <div
       v-show="failure"
       class="h3 mtm center"
     >
       {{ $t('There was a problem') }}
     </div>
     <div class="filter-summary">
-      <span 
-        v-if="showFilterSummary && !emptyResponse" 
-        class="result-summary"
-      >
-        Showing {{ filteredDocuments.length }} results out of {{ documents.length }} in <b><em>Documents</em></b><span v-if="search.length > 0"> for <b><em>"{{ search }}"</em></b></span>
-      </span>
-      
-      <span v-if="department !== '' && !emptyResponse">
-        <button 
-          class="filter-button"
-          @click="showFilterSummary = false; clearDepartment()"
-        >
-          {{ department }}
-          <i class="far fa-times" />
-        </button>
-      </span>
-
-      <span v-if="start !== '' && end !== '' && !emptyResponse">
-        <button 
-          class="filter-button"
-          @click="showFilterSummary = false; clearDates()"
-        > 
-          {{ start | formatFilterDate }} - {{ end | formatFilterDate }}
-          <i class="far fa-times" />
-        </button>
+      <span class="result-summary">
+        <div v-if="emptyResponse">
+          No results found for<span v-if="displaySearch.length > 0"><b><em>"{{ displaySearch }}"</em></b></span>
+        </div>
+        <div v-else-if="$refs.paginator">
+          Showing {{ pageStart }} – {{ pageEnd }} of {{ total }} results
+          <span v-if="displaySearch.length > 0">
+            for <b><em>"{{ displaySearch }}"</em></b>
+          </span>
+        </div>
       </span>
 
       <span v-if="department !== ''">
+        <button 
+          class="filter-button"
+          @click="clearDepartment()"
+        >
+          {{ department }}
+          <i class="fa-solid fa-xmark" />
+        </button>
+      </span>
+
+      <span v-if="start !== '' && end !== ''">
+        <button 
+          class="filter-button"
+          @click="clearDates()"
+        > 
+          {{ start | formatFilterDate }} - {{ end | formatFilterDate }}
+          <i class="fa-solid fa-xmark" />
+        </button>
+      </span>
+
+      <span v-if="displaySearch || start !== '' && end !== '' || department !== ''">
         <input
           type="submit"
           class="clear-button"
           value="Clear all"
-          @click="showFilterSummary = false; clearAllFilters()"
+          @click="clearAllFilters()"
         >
       </span>
+      <div v-if="emptyResponse" class="helper-text">
+        There were no results found matching your search. Try adjusting your search settings.
+        <br>
+        <br>
+        Here are some options:
+        <ul>
+          <li>Use different or fewer search terms</li>
+          <li>Check your spelling</li>
+          <li>Remove or adjust any filters</li>
+        </ul>
+        Want to start over? Select Clear all to reset the search settings.
+      </div>
     </div>
     <table 
-      v-if="!loading && !failure"
+      v-if="!loading && !failure && !emptyResponse"
       class="stack theme-light archive-results"
     >
       <thead>
@@ -161,6 +172,7 @@
       </thead>
       <!-- <tbody> -->
       <paginate
+        ref="paginator"
         name="filteredDocuments"
         :list="filteredDocuments"
         class="paginate-list"
@@ -173,6 +185,7 @@
           class="vue-clickable-row"
           @click.stop.prevent="goToDoc(post.link)"
         >
+        <!-- {{ post }} -->
           <td class="title">
             <a
               :href="translateLink(post.link)"
@@ -197,6 +210,7 @@
       </paginate>
     </table>
     <paginate-links
+      v-show="!loading && !emptyResponse && !failure"
       for="filteredDocuments"
       :async="true"
       :limit="3"
@@ -206,7 +220,7 @@
         next: $t('Next'),
         prev: $t('Previous')
       }"
-      @change="scrollToTop"
+      @change="scrollToTop(); getPaginationRange()"
     />
   </div>
 </template>
@@ -247,12 +261,15 @@ export default {
       currentSort: "date",
       currentSortDir: "desc",
       search: "",
+      displaySearch: "",
       failure: false,
       loading: true,
       start: "",
       end: "",
+      pageStart: 0,
+      pageEnd: 0,
+      total: 0,
       department: "",
-      showFilterSummary: "",
       endpointCategories: [],
       endpointCategoriesSlang: [],
       filteredDocuments: [],
@@ -328,6 +345,7 @@ export default {
     await this.getDocuments();
     await this.getAllCategories();
     await this.getDropdownCategories();
+    await this.getPaginationRange();
   },
 
   methods: {
@@ -362,7 +380,11 @@ export default {
       let dateDocuments = await this.dateFilter(this.documents);
       let searchDocuments = await this.searchFilter(dateDocuments);
       let deptDocuments = await this.deptFilter(searchDocuments);
+      this.displaySearch = this.search;
       this.filteredDocuments = deptDocuments;
+      this.$nextTick(() => {
+        this.getPaginationRange();
+      });
     },
 
     dateFilter: async function (documents) {
@@ -381,7 +403,6 @@ export default {
             datedDocuments.push(document);
           }
         });
-        this.showFilterSummary = true;
         return datedDocuments;
         
       } 
@@ -442,6 +463,19 @@ export default {
       return;
     },
 
+    getPaginationRange: function () {
+      let rangeRegex = /^(\d+)-(\d+) of (\d+)$/;
+      let matches = rangeRegex.exec(this.$refs.paginator.pageItemsCount);
+
+      if (matches != null) {
+        this.pageStart = matches[1];
+        this.pageEnd = matches[2];
+        this.total = matches[3];
+      }
+      console.log(this.total);
+      return;
+    },
+
     getDocuments: async function () {
       return axios
         .get(this.slug)
@@ -466,7 +500,6 @@ export default {
       this.start = '';
       this.end = '';
       this.department = '';
-      this.showFilterSummary = false;
       this.filterDocuments();
     },
 
@@ -497,6 +530,7 @@ export default {
 
     clearSearch: function() {
       this.search = '';
+      this.filteredDocuments();
     },
 
     scrollToTop: function () {
@@ -550,13 +584,10 @@ table {
   text-align: left;
 }
 
-.result-summary {
-  margin-right: 8px;
-}
-
 .filter-button{
-  margin: 0px 8px 8px 0px;
-  padding: 4px;
+  margin: 12px 16px 8px 0px;
+  padding: 6px;
+  border: 2px solid transparent;
   border-radius: 4px;
   background-color: #cfcfcf;
   color: #333333;
@@ -566,15 +597,25 @@ table {
   cursor: pointer;
 }
 
+.filter-button:hover {
+  border-color: #2176d2;
+  background-color: #cfcfcf;
+  color: #333333;
+}
 
 .clear-button{
-  margin: 0px 8px 0px 8px;
+  margin-top: 12px;
   border: none;
   background-color: transparent;
   color: #0f4d90;
   cursor: pointer;
   font-weight: 700;
   text-decoration: underline;
+  padding: 0px;
+}
+
+.helper-text{
+  margin-top: 16px;
 }
 
 .v-select .vs__actions{
