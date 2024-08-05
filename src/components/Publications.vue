@@ -458,6 +458,9 @@ export default {
 
 table {
   font-size: 14px;
+  a {
+    color: #0f4d90 !important;
+  }
 }
 #filter-results {
   h4 {
