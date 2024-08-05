@@ -10,7 +10,7 @@
         class="search-field"
         type="text"
         :placeholder="$t('Filter documents')"
-        @keyup.enter="filterDocuments();"
+        @keyup.enter="filterDocuments()"
       >
       <button
         v-if="search.length > 0"
@@ -67,6 +67,7 @@
             label="slang_name"
             :placeholder="$t('All departments')"
             :options="categories"
+            :clearable="false"
             @input="filterDocuments()"
           />
         </div>
@@ -85,19 +86,67 @@
       <i class="fas fa-spinner fa-spin fa-3x" />
     </div>
     <div
-      v-show="!loading && emptyResponse"
-      class="h3 mtm center"
-    >
-      {{ $t('No results') }}
-    </div>
-    <div
       v-show="failure"
       class="h3 mtm center"
     >
       {{ $t('There was a problem') }}
     </div>
+    <div class="filter-summary">
+      <span class="result-summary">
+        <div v-if="emptyResponse">
+          No results found for<span v-if="displaySearch.length > 0"><b><em>"{{ displaySearch }}"</em></b></span>
+        </div>
+        <div v-else-if="$refs.paginator">
+          Showing {{ pageStart }} – {{ pageEnd }} of {{ total }} results
+          <span v-if="displaySearch.length > 0">
+            for <b><em>"{{ displaySearch }}"</em></b>
+          </span>
+        </div>
+      </span>
+
+      <span v-if="department !== ''">
+        <button 
+          class="filter-button"
+          @click="clearDepartment()"
+        >
+          {{ department }}
+          <i class="fa-solid fa-xmark" />
+        </button>
+      </span>
+
+      <span v-if="start !== '' && end !== ''">
+        <button 
+          class="filter-button"
+          @click="clearDates()"
+        > 
+          {{ start | formatFilterDate }} - {{ end | formatFilterDate }}
+          <i class="fa-solid fa-xmark" />
+        </button>
+      </span>
+
+      <span v-if="displaySearch || start !== '' && end !== '' || department !== ''">
+        <input
+          type="submit"
+          class="clear-button"
+          value="Clear all"
+          @click="clearAllFilters()"
+        >
+      </span>
+      <div v-if="emptyResponse" class="helper-text">
+        There were no results found matching your search. Try adjusting your search settings.
+        <br>
+        <br>
+        Here are some options:
+        <ul>
+          <li>Use different or fewer search terms</li>
+          <li>Check your spelling</li>
+          <li>Remove or adjust any filters</li>
+        </ul>
+        Want to start over? Select Clear all to reset the search settings.
+      </div>
+    </div>
     <table 
-      v-if="!loading && !failure"
+      v-if="!loading && !failure && !emptyResponse"
       class="stack theme-light archive-results"
     >
       <thead>
@@ -121,6 +170,7 @@
       </thead>
       <!-- <tbody> -->
       <paginate
+        ref="paginator"
         name="filteredDocuments"
         :list="filteredDocuments"
         class="paginate-list"
@@ -133,6 +183,7 @@
           class="vue-clickable-row"
           @click.stop.prevent="goToDoc(post.link)"
         >
+        <!-- {{ post }} -->
           <td class="title">
             <a
               :href="translateLink(post.link)"
@@ -157,6 +208,7 @@
       </paginate>
     </table>
     <paginate-links
+      v-show="!loading && !emptyResponse && !failure"
       for="filteredDocuments"
       :async="true"
       :limit="3"
@@ -166,7 +218,7 @@
         next: $t('Next'),
         prev: $t('Previous')
       }"
-      @change="scrollToTop"
+      @change="scrollToTop(); getPaginationRange()"
     />
   </div>
 </template>
@@ -196,6 +248,9 @@ export default {
         return moment(String(value)).format("MMM. DD, YYYY");
       }
     },
+    formatFilterDate: function (value) {
+      return moment(String(value)).format("MM/DD/YY");
+    },
   },
   data: function () {
     return {
@@ -204,10 +259,14 @@ export default {
       currentSort: "date",
       currentSortDir: "desc",
       search: "",
+      displaySearch: "",
       failure: false,
       loading: true,
       start: "",
       end: "",
+      pageStart: 0,
+      pageEnd: 0,
+      total: 0,
       department: "",
       endpointCategories: [],
       endpointCategoriesSlang: [],
@@ -267,7 +326,7 @@ export default {
         return "https://api.phila.gov/phila/the-latest/categories";
       }
       const languageCode = vm.language;
-      const url = process.env.VUE_APP_BUCKET_URL + `${languageCode}/phila_the-latest_categories.json`;
+      const url = process.env.VUE_APP_BUCKET_URL + `${languageCode}/phila_the_latest_categories.json`;
       return url;
     },
   
@@ -284,6 +343,7 @@ export default {
     await this.getDocuments();
     await this.getAllCategories();
     await this.getDropdownCategories();
+    await this.getPaginationRange();
   },
 
   methods: {
@@ -298,6 +358,17 @@ export default {
       return null;
     },
 
+    clearDepartment() {
+      this.department = '';
+      this.filterDocuments();
+    },
+
+    clearDates() {
+      this.start = '';
+      this.end = '';
+      this.filterDocuments();
+    },
+
     translateLink(link) {
       let self = this;
       return self.currentRouteName ? self.currentRouteName+link : link;
@@ -306,7 +377,12 @@ export default {
     filterDocuments: async function () {
       let dateDocuments = await this.dateFilter(this.documents);
       let searchDocuments = await this.searchFilter(dateDocuments);
-      this.filteredDocuments  = await this.deptFilter(searchDocuments);
+      let deptDocuments = await this.deptFilter(searchDocuments);
+      this.displaySearch = this.search;
+      this.filteredDocuments = deptDocuments;
+      this.$nextTick(() => {
+        this.getPaginationRange();
+      });
     },
 
     dateFilter: async function (documents) {
@@ -334,7 +410,7 @@ export default {
 
     deptFilter: async function (documents) {
       if (this.department !== "" && this.department !== null) {
-        return this.documents.filter((document) => {
+        return documents.filter((document) => {
           return document.categories.find((category) => {
             if (category.slang_name === this.department) {
               return true;
@@ -382,6 +458,19 @@ export default {
       this.categories = this.categories
         .filter((category) => this.endpointCategoriesSlang.includes(category))
         .sort();
+      return;
+    },
+
+    getPaginationRange: function () {
+      let rangeRegex = /^(\d+)-(\d+) of (\d+)$/;
+      let matches = rangeRegex.exec(this.$refs.paginator.pageItemsCount);
+
+      if (matches != null) {
+        this.pageStart = matches[1];
+        this.pageEnd = matches[2];
+        this.total = matches[3];
+      }
+      console.log(this.total);
       return;
     },
 
@@ -439,6 +528,7 @@ export default {
 
     clearSearch: function() {
       this.search = '';
+      this.filteredDocuments();
     },
 
     scrollToTop: function () {
@@ -485,6 +575,45 @@ table {
   width: 30px;
   height:100%;
   fill: #0f4d90;
+}
+
+.filter-summary{
+  margin: 16px 0px 16px 0px;
+  text-align: left;
+}
+
+.filter-button{
+  margin: 12px 16px 8px 0px;
+  padding: 6px;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  background-color: #cfcfcf;
+  color: #333333;
+  line-height: normal;
+  text-transform: capitalize;
+  font-weight: normal;
+  cursor: pointer;
+}
+
+.filter-button:hover {
+  border-color: #2176d2;
+  background-color: #cfcfcf;
+  color: #333333;
+}
+
+.clear-button{
+  margin-top: 12px;
+  border: none;
+  background-color: transparent;
+  color: #0f4d90;
+  cursor: pointer;
+  font-weight: 700;
+  text-decoration: underline;
+  padding: 0px;
+}
+
+.helper-text{
+  margin-top: 16px;
 }
 
 .v-select .vs__actions{
