@@ -586,7 +586,7 @@ table {
 }
 
 .filter-button{
-  margin: 12px 16px 8px 0px;
+  margin: 8px 8px 0 0;
   padding: 6px;
   border: 2px solid transparent;
   border-radius: 4px;
@@ -605,7 +605,7 @@ table {
 }
 
 .clear-button{
-  margin-top: 12px;
+  margin: 12px 0 0 8px;
   border: none;
   background-color: transparent;
   color: #0f4d90;
