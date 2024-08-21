@@ -217,6 +217,7 @@ export default {
       paginate: [ "filteredDocuments" ],
       searchOptions: {
         shouldSort: false,
+        tokenize: true,
         threshold: 0.4,
         keys: [ "title" ],
       },
