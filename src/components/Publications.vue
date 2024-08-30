@@ -32,7 +32,7 @@
     >
       <h4>{{ $t('Filter results') }}</h4>
       <div class="filter-container grid-x grid-margin-x">
-        <div class="cell medium-5 small-10">
+        <div class="start-date cell medium-5 small-10">
           <datepicker
             v-model="start"
             aria-label="Start date"
@@ -44,11 +44,11 @@
             @closed="filterDocuments()"
           />
         </div>
-        <div class="cell medium-1 small-10">
+        <div class="arrow cell medium-1 small-10">
           <i class="fas fa-arrow-right" />
         </div>
         
-        <div class="cell medium-5 ">
+        <div class="end-date cell medium-5 ">
           <datepicker
             v-model="end"
             aria-label="End date"
@@ -71,12 +71,6 @@
             @input="filterDocuments()"
           />
         </div>
-        <div class="cell medium-5 ">
-          <a
-            class="button content-type-featured"
-            @click="clearAllFilters()"
-          >{{ $t('Clear filters') }}</a>
-        </div>
       </div>
     </div>
     <div
@@ -93,56 +87,76 @@
     </div>
     <div class="filter-summary">
       <span class="result-summary">
-        <div v-if="emptyResponse">
-          No results found for<span v-if="displaySearch.length > 0"><b><em>"{{ displaySearch }}"</em></b></span>
-        </div>
-        <div v-else-if="$refs.paginator">
+        <span v-if="emptyResponse">
+          No results found for
+          <span 
+            v-if="displaySearch.length > 0"
+            class="search-term"
+          >
+            <b><em>"{{ displaySearch }}"</em></b>
+          </span>
+        </span>
+        <span v-else-if="$refs.paginator">
           Showing {{ pageStart }} – {{ pageEnd }} of {{ total }} results
-          <span v-if="displaySearch.length > 0">
+          <span 
+            v-if="displaySearch.length > 0"
+            class="search-term"
+          >
             for <b><em>"{{ displaySearch }}"</em></b>
           </span>
-        </div>
+        </span>
+        <span v-if="displaySearch.length > 0 && start == '' && end == '' && department == ''">
+          <input
+            type="submit"
+            class="clear-button"
+            value="Clear all"
+            @click="clearAllFilters()"
+          >
+        </span>
       </span>
+      <div>
+        <span v-if="department !== ''">
+          <button 
+            class="filter-button"
+            @click="clearDepartment()"
+          >
+            {{ department }}
+            <i class="fa-solid fa-xmark" />
+          </button>
+        </span>
 
-      <span v-if="department !== ''">
-        <button 
-          class="filter-button"
-          @click="clearDepartment()"
-        >
-          {{ department }}
-          <i class="fa-solid fa-xmark" />
-        </button>
-      </span>
+        <span v-if="start !== '' && end !== ''">
+          <button 
+            class="filter-button"
+            @click="clearDates()"
+          > 
+            {{ start | formatFilterDate }} - {{ end | formatFilterDate }}
+            <i class="fa-solid fa-xmark" />
+          </button>
+        </span>
 
-      <span v-if="start !== '' && end !== ''">
-        <button 
-          class="filter-button"
-          @click="clearDates()"
-        > 
-          {{ start | formatFilterDate }} - {{ end | formatFilterDate }}
-          <i class="fa-solid fa-xmark" />
-        </button>
-      </span>
-
-      <span v-if="displaySearch || start !== '' && end !== '' || department !== ''">
-        <input
-          type="submit"
-          class="clear-button"
-          value="Clear all"
-          @click="clearAllFilters()"
-        >
-      </span>
-      <div v-if="emptyResponse" class="helper-text">
-        There were no results found matching your search. Try adjusting your search settings.
+        <span v-if="start !== '' && end !== '' || department !== ''">
+          <input
+            type="submit"
+            class="clear-button"
+            value="Clear all"
+            @click="clearAllFilters()"
+          >
+        </span>
+      </div>
+      <div 
+        v-if="emptyResponse" 
+        class="helper-text"
+      >
+        Improve your search results by:
         <br>
         <br>
-        Here are some options:
         <ul>
           <li>Use different or fewer search terms</li>
           <li>Check your spelling</li>
           <li>Remove or adjust any filters</li>
         </ul>
-        Want to start over? Select Clear all to reset the search settings.
+        Want to start over? Select “Clear all” to reset the search settings.
       </div>
     </div>
     <table 
@@ -183,7 +197,7 @@
           class="vue-clickable-row"
           @click.stop.prevent="goToDoc(post.link)"
         >
-        <!-- {{ post }} -->
+          <!-- {{ post }} -->
           <td class="title">
             <a
               :href="translateLink(post.link)"
@@ -560,9 +574,27 @@ table {
     margin-top:10px; 
   }
 }
+#publications {
+  .grid-margin-x {
+    margin: 0 !important;
+  }
+}
+
+.arrow {
+  margin: 0 1rem !important;
+}
+
+.start-date{
+  margin: 0 !important;
+}
+
+.end-date {
+  margin: 0 !important;
+}
 
 .filter-by-owner{
   font-family:"Open Sans", Helvetica, Roboto, Arial, sans-serif !important;
+  margin-left: 2rem !important;
   // min-width: 300px;
   
 }
@@ -586,9 +618,13 @@ table {
   text-align: left;
 }
 
+.search-term {
+  margin-right: 8px;
+}
+
 .filter-button{
   margin: 8px 8px 0 0;
-  padding: 6px;
+  padding: 4px;
   border: 2px solid transparent;
   border-radius: 4px;
   background-color: #cfcfcf;
@@ -605,6 +641,10 @@ table {
   color: #333333;
 }
 
+.filter-button i{
+  padding-left: 4px;
+}
+
 .clear-button{
   margin: 12px 0 0 8px;
   border: none;
@@ -617,7 +657,9 @@ table {
 }
 
 .helper-text{
-  margin-top: 16px;
+  background: rgba(150,201,255,.3);
+  padding: 32px;
+  margin-top: 2rem;
 }
 
 .v-select .vs__actions{
