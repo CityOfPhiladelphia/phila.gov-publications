@@ -287,7 +287,7 @@ export default {
       filteredDocuments: [],
       paginate: [ "filteredDocuments" ],
       searchOptions: {
-        shouldSort: false,
+        shouldSort: true,
         tokenize: true,
         threshold: 0.4,
         keys: [ "title" ],
@@ -560,7 +560,7 @@ export default {
 @import 'node_modules/vue-select/dist/vue-select';
 
 table {
-  font-size: 14px;
+  font-size: 1rem;
   a {
     color: #0f4d90 !important;
   }
@@ -731,7 +731,7 @@ a.button{
     height: 3.8rem;
     cursor: pointer;
   }
-
+  
   .fa-magnifying-glass{
     font-weight: normal;
   }
