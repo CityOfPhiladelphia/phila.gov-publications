@@ -456,7 +456,7 @@ export default {
 @import 'node_modules/vue-select/dist/vue-select';
 
 table {
-  font-size: 14px;
+  font-size: 1rem;
   a {
     color: #0f4d90 !important;
   }
