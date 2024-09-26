@@ -32,7 +32,7 @@
     >
       <h4>{{ $t('Filter results') }}</h4>
       <div class="filter-container grid-x grid-margin-x">
-        <div class="start-date cell medium-5 small-10">
+        <div class="start-date cell medium-5">
           <datepicker
             v-model="start"
             aria-label="Start date"
@@ -44,7 +44,7 @@
             @closed="filterDocuments()"
           />
         </div>
-        <div class="arrow cell medium-1 small-10">
+        <div class="arrow">
           <i class="fas fa-arrow-right" />
         </div>
         
@@ -148,13 +148,16 @@
         v-if="emptyResponse" 
         class="helper-text"
       >
+      <strong>There are no matching results.</strong>
+        <br>
+        <br>
         Improve your search results by:
         <br>
         <br>
         <ul>
-          <li>Use different or fewer search terms</li>
-          <li>Check your spelling</li>
-          <li>Remove or adjust any filters</li>
+          <li>Using different or fewer search terms.</li>
+          <li>Checking your spelling.</li>
+          <li>Removing or adjusting any filters.</li>
         </ul>
         Want to start over? Select “Clear all” to reset the search settings.
       </div>
@@ -660,6 +663,7 @@ table {
   background: rgba(150,201,255,.3);
   padding: 32px;
   margin-top: 2rem;
+  width: fit-content;
 }
 
 .v-select .vs__actions{
@@ -667,8 +671,9 @@ table {
 }
 
 .v-select .vs__search {
- color: #a1a1a1;
+ color: #444444;
  background: white;
+ font-size: 100%;
 }
 
 .vs__selected {
@@ -693,6 +698,17 @@ a.button{
 
   a.button{
     width:140px;
+  }
+  .filter-by-owner {
+    margin-left: 0 !important;
+  }
+  .arrow {
+    margin-bottom: 1rem !important;
+  }
+  #filter-results {
+    i {
+      margin-top: 0;
+    }
   }
 }
 .vue-search {
