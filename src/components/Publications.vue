@@ -488,7 +488,6 @@ export default {
         this.pageEnd = matches[2];
         this.total = matches[3];
       }
-      console.log(this.total);
       return;
     },
 
