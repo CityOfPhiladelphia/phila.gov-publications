@@ -85,7 +85,7 @@
     >
       {{ $t('There was a problem') }}
     </div>
-    <div class="filter-summary">
+    <div v-show ="!loading" class="filter-summary">
       <span class="result-summary">
         <span v-if="emptyResponse">
           No results found for
